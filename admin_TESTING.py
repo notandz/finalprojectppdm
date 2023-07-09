@@ -85,6 +85,7 @@ def home():
 
     # Image classification
     image_folder = st.text_input("Enter the path to the image folder:")
+    now = st.selectbox("What data u want to train?", ["Happy", "Sad"])
     if st.button("Classify Images"):
         if not os.path.exists(image_folder):
             st.write("Invalid image folder path!")
@@ -128,15 +129,21 @@ def home():
             df = pd.DataFrame(results)
             st.write(df)
             
+            
             # Count the number of happy and sad images
             count = df['Classification'].value_counts()
             st.write("Number of Detected as Happy Images:", count["Happy"])
             st.write("Number of Detected as Sad Images:", count["Sad"])
             st.write("Total Images:", len(image_files))
-            st.write("Accuracy:", count["Happy"] / len(image_files) * 100, "%")
-            st.write("Precision:", (df["Precision"].mean(), 2))
-            st.write("Recall:", (df["Recall"].mean(), 2))
-            st.write("F1-Score:", (df["F1-Score"].mean(), 2))
+            
+            if now == "Happy":
+                st.write("Accuracy:", round(count["Happy"] / len(image_files) * 100, 2), "%")
+            else:
+                st.write("Accuracy:", round(count["Sad"] / len(image_files) * 100, 2), "%")
+    
+            st.write("Precision:", round(df["Precision"].mean(), 2))
+            st.write("Recall:", round(df["Recall"].mean(), 2))
+            st.write("F1-Score:", round(df["F1-Score"].mean(), 2))
 
 # Streamlit UI - Train Page
 def train():
