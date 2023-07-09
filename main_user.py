@@ -1,7 +1,6 @@
 import os
 import glob
 import numpy as np
-import pandas as pd  # tambahkan library pandas
 from skimage.feature import graycomatrix, graycoprops
 import cv2
 from sklearn.model_selection import train_test_split
@@ -11,7 +10,7 @@ import joblib
 import streamlit as st
 
 # Global variables
-happy_dir = '/happy'
+happy_dir = 'happy'
 sad_dir = 'sad'
 dataset_file = 'dataset.npy'
 model_file = 'model.joblib'
@@ -28,12 +27,12 @@ def calculate_glcm_features(img):
         feature = graycoprops(glcm, prop).ravel()
         features.append(feature)
         
-        # st.write(f"{prop}: {feature}")
+        st.write(f"{prop}: {feature}")
     
     return np.concatenate(features)
 
 # Train the model
-def train_model(k):
+def train_model():
     st.write("Training Model...")
     
     # Load image files and labels
@@ -51,7 +50,7 @@ def train_model(k):
 
     # Train KNN classifier
     X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2, random_state=42)
-    model = KNeighborsClassifier(n_neighbors=k)
+    model = KNeighborsClassifier(n_neighbors=3)
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
     accuracy = metrics.accuracy_score(y_test, y_pred)
@@ -73,83 +72,97 @@ def train_model(k):
     np.save(dataset_file, dataset)
     st.write("Dataset saved!")
 
-# Streamlit UI - Home Page
-def home():
-    st.title('Happy or Sad Image Classifier')
+# Correct misclassification
+def correct_misclassification(features, correct_label):
+    # Load the dataset file
+    dataset = np.load(dataset_file)
+    labels = dataset[:, -1]  # Extract the labels
+
+    # Find the index of the misclassified image in the dataset
+    misclassified_index = np.where(np.all(dataset[:, :-1] == features, axis=1))[0][0]
+
+    # Update the label
+    labels[misclassified_index] = correct_label
+
+    # Save the updated dataset
+    np.save(dataset_file, np.column_stack((dataset[:, :-1], labels)))
+
+# Streamlit UI
+# Streamlit UI
+def main():
+    st.set_page_config(layout="wide")
+    st.markdown(
+        """
+        <style>
+        .container {
+            display: flex;
+        }
+        .left_column {
+            width: 50%;
+            padding: 1rem;
+        }
+        .right_column {
+            width: 50%;
+            padding: 1rem;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
     
+    st.title('Happy or Sad Image Classifier')
+
     # Check if model and dataset files exist
     model_exists = os.path.exists(model_file)
     dataset_exists = os.path.exists(dataset_file)
-    
-    # Add "Train Model" button
-    if st.button("Train Model"):
-        st.session_state.page = 'Train'
+
+    # Add "Retrain" button
+    if st.button("Retrain"):
+        train_model()
+        model_exists = True
 
     # Image classification
-    image_folder = st.text_input("Enter the path to the image folder:")
-    if st.button("Classify Images"):
-        if not os.path.exists(image_folder):
-            st.write("Invalid image folder path!")
-            return
+    file = st.file_uploader("Upload an image")
+    col1, col2 = st.columns(2)
+    if file is not None:
+        # Preprocess and extract GLCM features
+        file_bytes = np.asarray(bytearray(file.read()), dtype=np.uint8)
+        img = cv2.imdecode(file_bytes, cv2.IMREAD_GRAYSCALE)
+        img = cv2.resize(img, (48, 48))
+        features = calculate_glcm_features(img)
         
-        image_files = glob.glob(os.path.join(image_folder, '*'))
-        if len(image_files) == 0:
-            st.write("No images found in the specified folder!")
-            return
-        
-        # Load the model
+        col1.image(img, caption="Uploaded Image", use_column_width=False)
+
         if model_exists:
+            # Load the model and predict
             model = joblib.load(model_file)
-            
-            # Classify images and create a dataframe
-            results = []
-            for idx, file in enumerate(image_files):
-                img = cv2.resize(cv2.imread(file, 0), (48, 48))
-                features = calculate_glcm_features(img)
-                prediction = model.predict([features])[0]
-                result = {
-                    "No.": idx + 1,
-                    "Image File": os.path.basename(file),
-                    "Classification": "Happy" if prediction == 0 else "Sad"
-                }
-                results.append(result)
+            prediction = model.predict([features])[0]
+            if prediction == 0:
+                col2.write("The image is happy!")
+            else:
+                col2.write("The image is sad!")
                 
-            df = pd.DataFrame(results)
-            st.write(df)
-            
-            # Count the number of happy and sad images
-            count = df['Classification'].value_counts()
-            st.write("Number of Detected as Happy Images:", count["Happy"])
-            st.write("Number of  Detected as Sad Images:", count["Sad"])
-            st.write("Total Images:", len(image_files))
-            st.write("Accuracy:", count["Happy"] / len(image_files) * 100, "%")
+            # Calculate metrics
+            if dataset_exists:
+                dataset = np.load(dataset_file)
+                X_test, y_test = dataset[:, :-1], dataset[:, -1]
+                y_pred = model.predict(X_test)
+                accuracy = metrics.accuracy_score(y_test, y_pred)
+                precision = metrics.precision_score(y_test, y_pred)
+                recall = metrics.recall_score(y_test, y_pred)
+                f1_score = metrics.f1_score(y_test, y_pred)
+                st.write(f"Accuracy: {accuracy*100:.2f}%")
+                st.write(f"Precision: {precision:.2f}")
+                st.write(f"Recall: {recall:.2f}")
+                st.write(f"F1-Score: {f1_score:.2f}")
 
-# Streamlit UI - Train Page
-def train():
-    st.title('Train Model')
-    
-    # Add "Back" button
-    if st.button("Back"):
-        st.session_state.page = 'Home'
-    
-    # Select K value
-    k = st.selectbox("Select K value", [1, 3, 5, 7, 9])
-    
-    # Train the model
-    if st.button("Train", key="train_button"):
-        train_model(k)
-
-# Streamlit App
-def main():
-    # Initialize Streamlit session state
-    if 'page' not in st.session_state:
-        st.session_state.page = 'Home'
-    
-    # Page navigation
-    if st.session_state.page == 'Home':
-        home()
-    elif st.session_state.page == 'Train':
-        train()
+            # Classification result and correction
+            if st.button("Correct"):
+                if prediction == 0:
+                    correct_misclassification(features, 1)
+                else:
+                    correct_misclassification(features, 0)
+                st.write("Misclassification corrected!")
 
 if __name__ == "__main__":
     main()
