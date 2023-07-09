@@ -5,4 +5,4 @@ matplotlib==3.7.1
 scikit-image==0.20.0
 scikit-learn==1.2.2
 joblib==1.2.0
-pencv-python==2.4.9
+opencv-python==2.4.9
