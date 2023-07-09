@@ -11,7 +11,7 @@ import joblib
 import streamlit as st
 
 # Global variables
-happy_dir = 'happy'
+happy_dir = '/happy'
 sad_dir = 'sad'
 dataset_file = 'dataset.npy'
 model_file = 'model.joblib'
