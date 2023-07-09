@@ -85,7 +85,7 @@ def home():
 
     # Image classification
     image_folder = st.text_input("Enter the path to the image folder:")
-    now = st.selectbox("What data u want to train?", ["Happy", "Sad"])
+    now = st.selectbox("What data u want to test?", ["Happy", "Sad"])
     if st.button("Classify Images"):
         if not os.path.exists(image_folder):
             st.write("Invalid image folder path!")
