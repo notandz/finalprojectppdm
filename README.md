@@ -6,7 +6,7 @@
 <img src="https://avatars.githubusercontent.com/u/89618518?v=4" width="130" height="130"/>
 </p>
 <p align="center">
-<a href="#"><img title="DABONK-BOT" src="https://img.shields.io/badge/Whatsapp Bot-green?colorA=%23ff0000&colorB=%23017e40&style=for-the-badge"></a>
+<a href="#"><img title="DABONK-BOT" src="https://img.shields.io/badge/Whatsapp me!-green?colorA=%23ff0000&colorB=%23017e40&style=for-the-badge"></a>
 </p>
 <p align="center">
 <a href="https://github.com/notandz"><img title="Author" src="https://img.shields.io/badge/Author-notandz-red.svg?style=for-the-badge&logo=github"></a>
