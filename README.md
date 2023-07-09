@@ -27,7 +27,8 @@
 | :-----------: | :--------------------------------: |
 |       ✅       | Check Image Happy or Sad          |
 
-
+https://fp-ppdm.streamlit.app/ [LINK APP]
+https://test-fpppdm.streamlit.app/ [LINK TESTING]
 
 ## To-Do
  - Add More Feature
