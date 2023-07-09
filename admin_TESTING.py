@@ -134,9 +134,9 @@ def home():
             st.write("Number of Detected as Sad Images:", count["Sad"])
             st.write("Total Images:", len(image_files))
             st.write("Accuracy:", count["Happy"] / len(image_files) * 100, "%")
-            st.write("Precision:", df["Precision"].mean())
-            st.write("Recall:", df["Recall"].mean())
-            st.write("F1-Score:", df["F1-Score"].mean())
+            st.write("Precision:", (df["Precision"].mean(), 2))
+            st.write("Recall:", (df["Recall"].mean(), 2))
+            st.write("F1-Score:", (df["F1-Score"].mean(), 2))
 
 # Streamlit UI - Train Page
 def train():
