@@ -23,7 +23,7 @@
  
 ## Features
 
-| Sticker Creator |                Feature           |
+| Status          |                Feature           |
 | :-----------: | :--------------------------------: |
 |       ✅       | Check Image Happy or Sad          |
 
